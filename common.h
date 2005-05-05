@@ -49,6 +49,16 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 /**
+ * String encoding used for extracting text from OOo zip files
+ */
+#define kTextExtractionEncoding	    kCFStringEncodingUnicode
+
+/**
+ * Character type for the above string encoding
+ */
+typedef UInt16 TextExtractionCharType;
+
+/**
  * Given a path to a zip archive, extract the content of an individual file
  * of that zip archive into a mutable data structure.
  *
@@ -91,6 +101,6 @@ void ParseMetaXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlig
  * @param saveText	true to save CFDATA node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, UInt8 separatorChar=' ', bool nodeEncountered=false);
+void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ', bool nodeEncountered=false);
 
 #endif

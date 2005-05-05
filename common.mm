@@ -52,7 +52,7 @@
  * Command used by popen() to construct a file handle extracting a given
  * file out of a zip archive
  */
-#define kOpenSubfileCmd		"/usr/bin/unzip -p '%s' '%s'"
+#define kOpenSubfileCmd		"/usr/bin/unzip -p \"%s\" \"%s\""
 
 ///// functions /////
 
@@ -79,7 +79,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	ExtractNodeText(CFSTR("dc:title"), cfXMLTree, theData);
 	if(CFDataGetLength(theData))
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kCFStringEncodingUTF8, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
 		CFDictionaryAddValue(spotlightDict, kMDItemTitle, theText);
 		CFRelease(theText);
 		
@@ -91,7 +91,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	ExtractNodeText(CFSTR("dc:description"), cfXMLTree, theData);
 	if(CFDataGetLength(theData))
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kCFStringEncodingUTF8, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
 		CFDictionaryAddValue(spotlightDict, kMDItemComment, theText);
 		CFRelease(theText);
 		
@@ -104,7 +104,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	ExtractNodeText(CFSTR("dc:creator"), cfXMLTree, theData);
 	if(CFDataGetLength(theData))
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kCFStringEncodingUTF8, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
 		CFArrayAppendValue(authors, theText);
 		CFRelease(theText);
 		
@@ -113,7 +113,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	ExtractNodeText(CFSTR("meta:initial-creator"), cfXMLTree, theData);
 	if(CFDataGetLength(theData))
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kCFStringEncodingUTF8, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
 		CFArrayAppendValue(authors, theText);
 		CFRelease(theText);
 		
@@ -131,7 +131,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	ExtractNodeText(CFSTR("meta:keywords"), cfXMLTree, theData, '\\');
 	if(CFDataGetLength(theData))
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kCFStringEncodingUTF8, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
 		CFArrayRef keywordArray=CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault, theText, CFSTR("\\"));
 		if(keywordArray)
 		{
@@ -178,7 +178,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
  * @param saveText	true to save CFDATA node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, UInt8 separatorChar, bool saveText)
+void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar, bool saveText)
 {
 	bool extractText=saveText;
 	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
@@ -208,15 +208,15 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
 				// separate consecutive strings by whitespace
 				if(CFDataGetLength(textData) > 0)
 				{
-					CFDataAppendBytes(textData, &separatorChar, 1);
+					CFDataAppendBytes(textData, (UInt8 *)&separatorChar, sizeof(TextExtractionCharType));
 				}
-				UInt8 *utfText=new UInt8[CFStringGetLength(theText)+1];
-				memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(UInt8));
+				TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
+				memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
 				CFRange extractRange;
 				extractRange.location=0;
 				extractRange.length=CFStringGetLength(theText);
-				CFStringGetBytes(theText, extractRange, kCFStringEncodingUTF8, ' ', false, utfText, CFStringGetLength(theText)+1, NULL);
-				CFDataAppendBytes(textData, utfText, CFStringGetLength(theText));
+				CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
+				CFDataAppendBytes(textData, (UInt8 *)utfText, CFStringGetLength(theText)*sizeof(TextExtractionCharType));
 				delete[] utfText;
 			}
 			else if(CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeElement)
@@ -264,6 +264,8 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	char *openCmd=new char[strlen(kOpenSubfileCmd)+strlen((char *)filePath)+strlen(fileToExtract)+1];
 	memset(openCmd, '\0', strlen(kOpenSubfileCmd)+strlen((char *)filePath)+strlen(fileToExtract)+1);
 	sprintf(openCmd, kOpenSubfileCmd, filePath, fileToExtract);
+	
+	fprintf(stderr, "%s\n", openCmd);
 	
 	FILE *f=popen(openCmd, "r");
 	if(!f)

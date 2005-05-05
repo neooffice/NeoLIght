@@ -130,7 +130,7 @@ static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDict
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kCFStringEncodingUTF8, false);
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
 	CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
 	CFRelease(theText);
 	

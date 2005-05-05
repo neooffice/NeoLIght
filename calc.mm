@@ -131,7 +131,7 @@ static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDiction
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kCFStringEncodingUTF8, false);
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
 	CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
 	CFRelease(theText);
 	
