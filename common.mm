@@ -128,7 +128,7 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	// extract document keywords. We'll treat the subject as another keyword as well.
 	
 	ExtractNodeText(CFSTR("dc:subject"), cfXMLTree, theData, '\\');
-	ExtractNodeText(CFSTR("meta:keywords"), cfXMLTree, theData, '\\');
+	ExtractNodeText(CFSTR("meta:keyword"), cfXMLTree, theData, '\\');
 	if(CFDataGetLength(theData))
 	{
 		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
