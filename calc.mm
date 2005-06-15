@@ -57,6 +57,11 @@
  */
 #define kCalcContentArchiveFile		"content.xml"
 
+/**
+ * Subfile in an SXC archive holding the styles content
+ */
+#define kCalcContentStylesFile		"styles.xml"
+
 ///// prototypes /////
 
 static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict);
@@ -88,6 +93,19 @@ OSErr ExtractCalcMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlig
 	}
 	ParseMetaXML(metaCFData, spotlightDict);
 	CFRelease(metaCFData);
+	
+	// open the styles.xml file and read the header and footer info into
+	// spotlight
+	
+	CFMutableDataRef stylesCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
+	theErr=ExtractZipArchiveContent(pathToFile, kCalcMetadataArchiveFile, stylesCFData);
+	if(theErr!=noErr)
+	{
+		CFRelease(stylesCFData);
+		return(theErr);
+	}
+	ParseStylesXML(stylesCFData, spotlightDict);
+	CFRelease(stylesCFData);
 	
 	// open the "content.xml" file within the sxc and extract its text
 	
@@ -132,7 +150,22 @@ static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDiction
 	// add the data as a text node for spotlight indexing
 	
 	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
-	CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
+	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
+	{
+	    // append this text to the existing set
+	    CFStringRef previousText=(CFStringRef)CFDictionaryGetValue(spotlightDict, kMDItemTextContent);
+	    CFMutableStringRef newText=CFStringCreateMutable(kCFAllocatorDefault, 0);
+	    CFStringAppend(newText, previousText);
+	    UniChar space=' ';
+	    CFStringAppendCharacters(newText, &space, 1);
+	    CFStringAppend(newText, theText);
+	    CFDictionaryReplaceValue(spotlightDict, kMDItemTextContent, newText);
+	    CFRelease(newText);
+	}
+	else
+	{
+	    CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
+	}
 	CFRelease(theText);
 	
 	// cleanup and return

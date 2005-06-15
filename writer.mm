@@ -63,6 +63,11 @@ static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryR
  */
 #define kWriterMetadataArchiveFile	"meta.xml"
 
+/**
+ * Subfile in an SXW archive containing the style data of a writer document
+ */
+#define kWriterStyleArchiveFile		"styles.xml"
+
 ///// functions /////
 
 /**
@@ -104,6 +109,19 @@ OSErr ExtractWriterMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotl
 	}
 	ParseMetaXML(metaCFData, spotlightDict);
 	CFRelease(metaCFData);
+	
+	// open the "styles.xml" file living within the sxw and read headers and
+	// footers into the spotlight dictionary
+	
+	CFMutableDataRef styleCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
+	theErr=ExtractZipArchiveContent(pathToFile, kWriterStyleArchiveFile, styleCFData);
+	if(theErr!=noErr)
+	{
+		CFRelease(styleCFData);
+		return(theErr);
+	}
+	ParseStylesXML(styleCFData, spotlightDict);
+	CFRelease(styleCFData);
 
 	return(noErr);
 }
@@ -132,7 +150,22 @@ static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryR
 	
 	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
 	
-	CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
+	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
+	{
+	    // append this text to the existing set
+	    CFStringRef previousText=(CFStringRef)CFDictionaryGetValue(spotlightDict, kMDItemTextContent);
+	    CFMutableStringRef newText=CFStringCreateMutable(kCFAllocatorDefault, 0);
+	    CFStringAppend(newText, previousText);
+	    UniChar space=' ';
+	    CFStringAppendCharacters(newText, &space, 1);
+	    CFStringAppend(newText, theText);
+	    CFDictionaryReplaceValue(spotlightDict, kMDItemTextContent, newText);
+	    CFRelease(newText);
+	}
+	else
+	{
+	    CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
+	}
 	CFRelease(theText);
 	
 	// cleanup and return

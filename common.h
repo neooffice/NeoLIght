@@ -103,4 +103,13 @@ void ParseMetaXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlig
  */
 void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ', bool nodeEncountered=false);
 
+/**
+ * Parse a styles.xml file of an OOo formatted file into for spotlight to index
+ * header and footer content
+ *
+ * @param styleCFData		XML file with styles.xml extaction
+ * @param spotlightDict		spotlight dictionary to be filled wih the text content
+ */
+void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlightDict);
+
 #endif

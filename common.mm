@@ -285,3 +285,51 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	
 	return(noErr);
 }
+
+/**
+ * Parse a styles.xml file of an OOo formatted file into for spotlight to index
+ * header and footer content
+ *
+ * @param styleCFData		XML file with styles.xml extaction
+ * @param spotlightDict		spotlight dictionary to be filled wih the text content
+ */
+void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlightDict)
+{	
+	// instantiate an XML parser on the content.xml file and extract
+	// content of appropriate header and footer nodes
+	
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromData(kCFAllocatorDefault, styleCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion);
+	if(!cfXMLTree)
+		return;
+	
+	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
+	ExtractNodeText(CFSTR("style:header"), cfXMLTree, textData);
+        TextExtractionCharType space=' ';
+	CFDataAppendBytes(textData, (UInt8 *)&space, sizeof(TextExtractionCharType));
+	ExtractNodeText(CFSTR("style:footer"), cfXMLTree, textData);
+	
+	// add the data as a text node for spotlight indexing
+	
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
+	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
+	{
+	    // append this text to the existing set
+	    CFStringRef previousText=(CFStringRef)CFDictionaryGetValue(spotlightDict, kMDItemTextContent);
+	    CFMutableStringRef newText=CFStringCreateMutable(kCFAllocatorDefault, 0);
+	    CFStringAppend(newText, previousText);
+	    CFStringAppendCharacters(newText, &space, 1);
+	    CFStringAppend(newText, theText);
+	    CFDictionaryReplaceValue(spotlightDict, kMDItemTextContent, newText);
+	    CFRelease(newText);
+	}
+	else
+	{
+	    CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
+	}
+	CFRelease(theText);
+	
+	// cleanup and return
+	
+	CFRelease(textData);
+	CFRelease(cfXMLTree);
+}
