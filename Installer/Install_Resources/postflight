@@ -1,4 +1,0 @@
-#!/bin/csh
-
-/usr/bin/mdimport -r /Library/Spotlight/neolight.mdimporter
-exit 0
