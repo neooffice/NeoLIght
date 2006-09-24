@@ -131,11 +131,22 @@ OSErr ExtractCalcMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlig
  */
 static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict)
 {
+	if(CFDataGetLength(contentCFData)==0)
+		return;
+	
 	// instantiate an XML parser on the content.xml file
 	
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromData(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion);
+	CFDictionaryRef errorDict=NULL;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(!cfXMLTree)
 		return;
+	if(errorDict)
+	{
+		// errors happened during our XML parsing.  Abort our interpretation and return.
+		
+		CFRelease(errorDict);
+		return;
+	}
 	
 	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
 	

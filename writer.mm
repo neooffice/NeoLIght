@@ -135,13 +135,24 @@ OSErr ExtractWriterMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotl
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
 static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict)
-{	
+{
+	if(CFDataGetLength(contentCFData)==0)
+		return;
+	
 	// instantiate an XML parser on the content.xml file and extract
 	// content of appropriate text nodes
 	
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromData(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion);
+	CFDictionaryRef errorDict=NULL;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(!cfXMLTree)
 		return;
+	if(errorDict)
+	{
+		// errors happened during our XML parsing.  Abort our interpretation and return.
+		
+		CFRelease(errorDict);
+		return;
+	}
 	
 	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
 	ExtractNodeText(CFSTR("text"), cfXMLTree, textData);

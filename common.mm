@@ -66,11 +66,22 @@
  */
 void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightDict)
 {
+	if(CFDataGetLength(metaCFData)==0)
+		return;
+	
 	// construct an XML parser
 	
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromData(kCFAllocatorDefault, metaCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion);
+	CFDictionaryRef errorDict=NULL;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, metaCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(!cfXMLTree)
 		return;
+	if(errorDict)
+	{
+		// errors happened during our XML parsing.  Abort our interpretation and return.
+		
+		CFRelease(errorDict);
+		return;
+	}
 
 	CFMutableDataRef theData=CFDataCreateMutable(kCFAllocatorDefault, 0);
 	
@@ -294,13 +305,24 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
 void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlightDict)
-{	
+{
+	if(CFDataGetLength(styleCFData)==0)
+		return;
+	
 	// instantiate an XML parser on the content.xml file and extract
 	// content of appropriate header and footer nodes
 	
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromData(kCFAllocatorDefault, styleCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion);
+	CFDictionaryRef errorDict=NULL;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, styleCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(!cfXMLTree)
 		return;
+	if(errorDict)
+	{
+		// errors happened during our XML parsing.  Abort our interpretation and return.
+		
+		CFRelease(errorDict);
+		return;
+	}
 	
 	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
 	ExtractNodeText(CFSTR("style:header"), cfXMLTree, textData);
