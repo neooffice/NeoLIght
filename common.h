@@ -104,6 +104,26 @@ void ParseMetaXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlig
 void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ', bool nodeEncountered=false);
 
 /**
+ * Given a node of a CoreFoundation XML structure, extracxt any
+ * text content from attributes of that node.
+ *
+ * The text data is attempted to be extracted with UTF8 encoding, in
+ * internal representation (no byte ordering marker)
+ *
+ * @param elementPrefix	element tag names are examined for this prefix.  When
+ *			encountered, all of these nodes will have their attributes examined
+ * @param attributeName	name of the attribute whose value should be extracted
+ * @param xmlTreeNode	current tree representation of the node being parsed
+ * @param textData	when elements are found with the given elementPrefix, any
+ *					attribute with the specified name will have its value
+ *					appended to the end of this mutable data, along with a
+ *					the separatorChar separator
+ * @param separatorChar	UTF8 character used to separate consecutive attribute values in
+ *			the metadata
+ */
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ');
+
+/**
  * Parse a styles.xml file of an OOo formatted file into for spotlight to index
  * header and footer content
  *

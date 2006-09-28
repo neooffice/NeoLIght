@@ -47,6 +47,7 @@
 #include "writer.h"
 #include "calc.h"
 #include "impress.h"
+#include "base.h"
 
 // -----------------------------------------------------------------------------
 //	constants
@@ -126,6 +127,11 @@ Boolean GetMetadataForFile(void *thisInterface,
 	if(ExtractImpressMetadata( pathToFile, attributes )==noErr)
 		toReturn=TRUE;
     }
+	else if(CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.database"), 0)==kCFCompareEqualTo)
+	{
+	if(ExtractBaseMetadata( pathToFile, attributes )==noErr)
+		toReturn=TRUE;
+	}
     
     return(toReturn);
 }

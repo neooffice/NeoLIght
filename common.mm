@@ -242,6 +242,85 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
 }
 
 /**
+ * Given a node of a CoreFoundation XML structure, extracxt any
+ * text content from attributes of that node.
+ *
+ * The text data is attempted to be extracted with UTF8 encoding, in
+ * internal representation (no byte ordering marker)
+ *
+ * @param elementPrefix	element tag names are examined for this prefix.  When
+ *			encountered, all of these nodes will have their attributes examined
+ * @param attributeName	name of the attribute whose value should be extracted
+ * @param xmlTreeNode	current tree representation of the node being parsed
+ * @param textData	when elements are found with the given elementPrefix, any
+ *					attribute with the specified name will have its value
+ *					appended to the end of this mutable data, along with a
+ *					the separatorChar separator
+ * @param separatorChar	UTF8 character used to separate consecutive attribute values in
+ *			the metadata
+ * @param saveText	true to save CFDATA node content as text, FALSE to just
+ *			recurse into element children
+ */
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar)
+{
+	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
+	
+	// check if the element matches our prefix and extract relevant attribute values
+	
+	if(CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement)
+	{
+		CFStringRef tagName=CFXMLNodeGetString(theNode);
+		if(CFStringHasPrefix(tagName, elementPrefix))
+		{
+			// we found one of our elements we're searching for.  Check to see if it has an
+			// appropriately named attribute
+			
+			CFXMLElementInfo *elementInfo=(CFXMLElementInfo *)CFXMLNodeGetInfoPtr(theNode);
+			if(elementInfo && elementInfo->attributes && CFDictionaryContainsKey(elementInfo->attributes, attributeName))
+			{
+				const void *attributeValue=CFDictionaryGetValue(elementInfo->attributes, attributeName);
+				if(CFGetTypeID(attributeValue)==CFStringGetTypeID())
+				{
+					CFStringRef theText=(CFStringRef)attributeValue;
+					// separate consecutive strings by whitespace
+					if(CFDataGetLength(textData) > 0)
+					{
+						CFDataAppendBytes(textData, (UInt8 *)&separatorChar, sizeof(TextExtractionCharType));
+					}
+					TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
+					memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
+					CFRange extractRange;
+					extractRange.location=0;
+					extractRange.length=CFStringGetLength(theText);
+					CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
+					CFDataAppendBytes(textData, (UInt8 *)utfText, CFStringGetLength(theText)*sizeof(TextExtractionCharType));
+					delete[] utfText;
+				}
+			}
+		}
+	}
+	
+	// recurse on any children to search for additional elements that may have other attributes
+	
+	if((CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeDocument) || (CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement))
+	{
+		CFIndex numChildren=CFTreeGetChildCount(xmlTreeNode);
+		CFXMLTreeRef *theChildren=new CFXMLTreeRef[numChildren];
+		CFTreeGetChildren(xmlTreeNode, theChildren);
+		for(CFIndex i=0; i<numChildren; i++)
+		{
+			if(CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeElement)
+			{
+				// recurse down into all elements, extracting text according to whether we're
+				// embedded within text nodes
+				ExtractNodeAttributeValue(elementPrefix, attributeName, theChildren[i], textData, separatorChar);
+			}
+		}
+		delete[] theChildren;
+	}
+}
+
+/**
  * Given a path to a zip archive, extract the content of an individual file
  * of that zip archive into a mutable data structure.
  *

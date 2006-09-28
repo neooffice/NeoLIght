@@ -14,6 +14,8 @@
 		AC53462D081FF83D00472358 /* common.h in Headers */ = {isa = PBXBuildFile; fileRef = AC53462C081FF83D00472358 /* common.h */; };
 		AC6525E308209B6B00BB2FD3 /* calc.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6525E208209B6B00BB2FD3 /* calc.h */; };
 		AC6525E808209BB000BB2FD3 /* calc.mm in Sources */ = {isa = PBXBuildFile; fileRef = AC6525E708209BB000BB2FD3 /* calc.mm */; };
+		AC6F226C0AC70539006C4D20 /* base.h in Headers */ = {isa = PBXBuildFile; fileRef = AC6F226B0AC70539006C4D20 /* base.h */; };
+		AC6F22760AC7057D006C4D20 /* base.mm in Sources */ = {isa = PBXBuildFile; fileRef = AC6F22750AC7057D006C4D20 /* base.mm */; };
 		AC87D9430820B8770008040F /* impress.h in Headers */ = {isa = PBXBuildFile; fileRef = AC87D9420820B8770008040F /* impress.h */; };
 		AC87D9480820B8B50008040F /* impress.mm in Sources */ = {isa = PBXBuildFile; fileRef = AC87D9470820B8B50008040F /* impress.mm */; };
 		ACF0AED70813358100398ACA /* writer.mm in Sources */ = {isa = PBXBuildFile; fileRef = ACF0AED60813358100398ACA /* writer.mm */; };
@@ -78,6 +80,8 @@
 		AC53462C081FF83D00472358 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
 		AC6525E208209B6B00BB2FD3 /* calc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calc.h; sourceTree = "<group>"; };
 		AC6525E708209BB000BB2FD3 /* calc.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = calc.mm; sourceTree = "<group>"; };
+		AC6F226B0AC70539006C4D20 /* base.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = base.h; sourceTree = SOURCE_ROOT; };
+		AC6F22750AC7057D006C4D20 /* base.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = base.mm; sourceTree = SOURCE_ROOT; };
 		AC87D9420820B8770008040F /* impress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = impress.h; sourceTree = "<group>"; };
 		AC87D9470820B8B50008040F /* impress.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = impress.mm; sourceTree = "<group>"; };
 		ACF0AED60813358100398ACA /* writer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = writer.mm; sourceTree = "<group>"; };
@@ -137,6 +141,8 @@
 				AC87D9470820B8B50008040F /* impress.mm */,
 				AC87D9420820B8770008040F /* impress.h */,
 				AC6525E708209BB000BB2FD3 /* calc.mm */,
+				AC6F226B0AC70539006C4D20 /* base.h */,
+				AC6F22750AC7057D006C4D20 /* base.mm */,
 				AC6525E208209B6B00BB2FD3 /* calc.h */,
 				AC53462C081FF83D00472358 /* common.h */,
 				AC534628081FF7B300472358 /* common.mm */,
@@ -166,6 +172,7 @@
 				ACF0AEDB081335DF00398ACA /* writer.h in Headers */,
 				AC53462D081FF83D00472358 /* common.h in Headers */,
 				AC87D9430820B8770008040F /* impress.h in Headers */,
+				AC6F226C0AC70539006C4D20 /* base.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,6 +278,7 @@
 				AC534629081FF7B300472358 /* common.mm in Sources */,
 				AC6525E808209BB000BB2FD3 /* calc.mm in Sources */,
 				AC87D9480820B8B50008040F /* impress.mm in Sources */,
+				AC6F22760AC7057D006C4D20 /* base.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
