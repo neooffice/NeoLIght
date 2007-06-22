@@ -16,10 +16,15 @@
 				<string>org.neooffice.impress</string>
 				<string>org.neooffice.draw</string>
 				<string>org.oasis.opendocument.text</string>
+				<string>org.oasis-open.opendocument.text</string>
 				<string>org.oasis.opendocument.spreadsheet</string>
+				<string>org.oasis-open.opendocument.spreadsheet</string>
 				<string>org.oasis.opendocument.graphics</string>
+				<string>org.oasis-open.opendocument.graphics</string>
 				<string>org.oasis.opendocument.presentation</string>
+				<string>org.oasis-open.opendocument.presentation</string>
 				<string>org.oasis.opendocument.database</string>
+				<string>org.oasis-open.opendocument.database</string>
 			</array>
 		</dict>
 	</array>
@@ -36,7 +41,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.5</string>
+	<string>1.1.6</string>
 	<key>CFPlugInDynamicRegisterFunction</key>
 	<string></string>
 	<key>CFPlugInDynamicRegistration</key>
