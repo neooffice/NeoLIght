@@ -97,29 +97,6 @@
 			<key>UTTypeDescription</key>
 			<string>OpenDocument Graphics</string>
 			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.graphics</string>
-			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>odg</string>
-					<string>otg</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.graphics</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.content</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>OpenDocument Graphics</string>
-			<key>UTTypeIdentifier</key>
 			<string>org.oasis-open.opendocument.graphics</string>
 			<key>UTTypeReferenceURL</key>
 			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
@@ -166,29 +143,6 @@
 			<key>UTTypeDescription</key>
 			<string>OpenDocument Presentation</string>
 			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.presentation</string>
-			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>odp</string>
-					<string>otp</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.presentation</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.content</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>OpenDocument Presentation</string>
-			<key>UTTypeIdentifier</key>
 			<string>org.oasis-open.opendocument.presentation</string>
 			<key>UTTypeReferenceURL</key>
 			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
@@ -224,29 +178,6 @@
 				</array>
 				<key>public.mime-type</key>
 				<string>application/vnd.sun.xml.calc</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.content</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>OpenDocument Spreadsheet</string>
-			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.spreadsheet</string>
-			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>ods</string>
-					<string>ots</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.spreadsheet</string>
 			</dict>
 		</dict>
 		<dict>
@@ -326,29 +257,6 @@
 			<key>UTTypeDescription</key>
 			<string>OpenDocument Text</string>
 			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.text</string>
-			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>odt</string>
-					<string>ott</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.text</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.content</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>OpenDocument Text</string>
-			<key>UTTypeIdentifier</key>
 			<string>org.oasis-open.opendocument.text</string>
 			<key>UTTypeReferenceURL</key>
 			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
@@ -361,28 +269,6 @@
 				</array>
 				<key>public.mime-type</key>
 				<string>application/vnd.oasis.opendocument.text</string>
-			</dict>
-		</dict>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.content</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>OpenDocument Text Master</string>
-			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.text-master</string>
-			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>odm</string>
-				</array>
-				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.text-master</string>
 			</dict>
 		</dict>
 		<dict>
@@ -416,7 +302,7 @@
 			<key>UTTypeDescription</key>
 			<string>OpenDocument Database</string>
 			<key>UTTypeIdentifier</key>
-			<string>org.oasis.opendocument.database</string>
+			<string>org.oasis-open.opendocument.database</string>
 			<key>UTTypeReferenceURL</key>
 			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
 			<key>UTTypeTagSpecification</key>
@@ -436,19 +322,41 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>OpenDocument Database</string>
+			<string>OpenDocument Formula</string>
 			<key>UTTypeIdentifier</key>
-			<string>org.oasis-open.opendocument.database</string>
+			<string>org.oasis-open.opendocument.formula</string>
 			<key>UTTypeReferenceURL</key>
-			<string>http://www.oasis-open.org/committees/download.php/12572/OpenDocument-v1.0-os.pdf</string>
+			<string>http://xml.openoffice.org/xml_specification.pdf</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>odb</string>
+					<string>odf</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/vnd.oasis.opendocument.database</string>
+				<string>application/vnd.oasis.opendocument.formula</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.content</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>NeoOffice Formula</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.neooffice.formula</string>
+			<key>UTTypeReferenceURL</key>
+			<string>http://xml.openoffice.org/xml_specification.pdf</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sxm</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.sun.xml.math</string>
 			</dict>
 		</dict>
 	</array>
