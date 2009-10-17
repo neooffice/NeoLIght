@@ -110,7 +110,7 @@ OSErr ExtractImpressMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spot
 	// open the "styles.xml" file and extract any header and footer
 	
 	CFMutableDataRef stylesCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kImpressContentArchiveFile, stylesCFData);
+	theErr=ExtractZipArchiveContent(pathToFile, kImpressStylesArchiveFile, stylesCFData);
 	if(theErr!=noErr)
 	{
 		CFRelease(stylesCFData);

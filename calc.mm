@@ -98,7 +98,7 @@ OSErr ExtractCalcMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlig
 	// spotlight
 	
 	CFMutableDataRef stylesCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kCalcMetadataArchiveFile, stylesCFData);
+	theErr=ExtractZipArchiveContent(pathToFile, kCalcContentStylesFile, stylesCFData);
 	if(theErr!=noErr)
 	{
 		CFRelease(stylesCFData);
