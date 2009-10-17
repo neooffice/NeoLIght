@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3FE86EF0108A7B4600A4AF5E /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 3FE86EEE108A7B4600A4AF5E /* ioapi.c */; };
+		3FE86EF1108A7B4600A4AF5E /* ioapi.h in Headers */ = {isa = PBXBuildFile; fileRef = 3FE86EEF108A7B4600A4AF5E /* ioapi.h */; };
+		3FE86EF3108A7B5200A4AF5E /* crypt.h in Headers */ = {isa = PBXBuildFile; fileRef = 3FE86EF2108A7B5200A4AF5E /* crypt.h */; };
+		3FE86EF5108A7B6900A4AF5E /* miniunz.c in Sources */ = {isa = PBXBuildFile; fileRef = 3FE86EF4108A7B6900A4AF5E /* miniunz.c */; };
+		3FE86EF8108A7B7C00A4AF5E /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 3FE86EF6108A7B7C00A4AF5E /* unzip.c */; };
+		3FE86EF9108A7B7C00A4AF5E /* unzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 3FE86EF7108A7B7C00A4AF5E /* unzip.h */; };
+		3FE86F46108A7E6E00A4AF5E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FE86F45108A7E6E00A4AF5E /* libz.dylib */; };
 		8D576312048677EA00EA77CD /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 08FB77B6FE84183AC02AAC07 /* main.mm */; settings = {ATTRIBUTES = (); }; };
 		8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
 		8D5B49A804867FD3000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8D5B49A704867FD3000E48DA /* InfoPlist.strings */; };
@@ -48,6 +55,13 @@
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		08FB77B6FE84183AC02AAC07 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		3FE86EEE108A7B4600A4AF5E /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ioapi.c; path = minizip/ioapi.c; sourceTree = "<group>"; };
+		3FE86EEF108A7B4600A4AF5E /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ioapi.h; path = minizip/ioapi.h; sourceTree = "<group>"; };
+		3FE86EF2108A7B5200A4AF5E /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = crypt.h; path = minizip/crypt.h; sourceTree = "<group>"; };
+		3FE86EF4108A7B6900A4AF5E /* miniunz.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = miniunz.c; path = minizip/miniunz.c; sourceTree = "<group>"; };
+		3FE86EF6108A7B7C00A4AF5E /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = unzip.c; path = minizip/unzip.c; sourceTree = "<group>"; };
+		3FE86EF7108A7B7C00A4AF5E /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = unzip.h; path = minizip/unzip.h; sourceTree = "<group>"; };
+		3FE86F45108A7E6E00A4AF5E /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		8D576316048677EA00EA77CD /* neolight.mdimporter */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = neolight.mdimporter; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D576317048677EA00EA77CD /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AC534628081FF7B300472358 /* common.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = common.mm; sourceTree = "<group>"; };
@@ -72,6 +86,7 @@
 			files = (
 				8D576314048677EA00EA77CD /* CoreFoundation.framework in Frameworks */,
 				C86B05270671AA6E00DD9006 /* CoreServices.framework in Frameworks */,
+				3FE86F46108A7E6E00A4AF5E /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +96,12 @@
 		089C166AFE841209C02AAC07 /* neolight */ = {
 			isa = PBXGroup;
 			children = (
+				3FE86EF6108A7B7C00A4AF5E /* unzip.c */,
+				3FE86EF7108A7B7C00A4AF5E /* unzip.h */,
+				3FE86EF4108A7B6900A4AF5E /* miniunz.c */,
+				3FE86EF2108A7B5200A4AF5E /* crypt.h */,
+				3FE86EEE108A7B4600A4AF5E /* ioapi.c */,
+				3FE86EEF108A7B4600A4AF5E /* ioapi.h */,
 				08FB77AFFE84173DC02AAC07 /* Source */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
@@ -92,6 +113,7 @@
 		089C1671FE841209C02AAC07 /* External Frameworks and Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				3FE86F45108A7E6E00A4AF5E /* libz.dylib */,
 				C86B05260671AA6E00DD9006 /* CoreServices.framework */,
 				0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */,
 			);
@@ -147,6 +169,9 @@
 				AC53462D081FF83D00472358 /* common.h in Headers */,
 				AC87D9430820B8770008040F /* impress.h in Headers */,
 				AC6F226C0AC70539006C4D20 /* base.h in Headers */,
+				3FE86EF1108A7B4600A4AF5E /* ioapi.h in Headers */,
+				3FE86EF3108A7B5200A4AF5E /* crypt.h in Headers */,
+				3FE86EF9108A7B7C00A4AF5E /* unzip.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +251,9 @@
 				AC6525E808209BB000BB2FD3 /* calc.mm in Sources */,
 				AC87D9480820B8B50008040F /* impress.mm in Sources */,
 				AC6F22760AC7057D006C4D20 /* base.mm in Sources */,
+				3FE86EF0108A7B4600A4AF5E /* ioapi.c in Sources */,
+				3FE86EF5108A7B6900A4AF5E /* miniunz.c in Sources */,
+				3FE86EF8108A7B7C00A4AF5E /* unzip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -349,7 +377,9 @@
 					ppc,
 					i386,
 				);
+				GCC_PREPROCESSOR_DEFINITIONS = unix;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_LDFLAGS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Development;
@@ -361,7 +391,9 @@
 					ppc,
 					i386,
 				);
+				GCC_PREPROCESSOR_DEFINITIONS = unix;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_LDFLAGS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Deployment;
@@ -373,7 +405,9 @@
 					ppc,
 					i386,
 				);
+				GCC_PREPROCESSOR_DEFINITIONS = unix;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
+				OTHER_LDFLAGS = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Default;
