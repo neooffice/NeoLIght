@@ -44,15 +44,12 @@
 // 4/27/05
 
 #include "common.h"
+#include "minizip/unzip.h"
 #include <CoreServices/CoreServices.h> // for Metadata key references
 
-///// constants ////
+///// constants /////
 
-/**
- * Command used by popen() to construct a file handle extracting a given
- * file out of a zip archive
- */
-#define kOpenSubfileCmd		"/usr/bin/unzip -p \"%s\" \"%s\""
+#define UNZIP_BUFFER_SIZE 4096
 
 ///// functions /////
 
@@ -336,6 +333,8 @@ void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeN
  */
 OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtract, CFMutableDataRef fileContents)
 {
+	OSErr ret = -50;
+
 	// extract the path as UTF-8 for internationalization
 	
 	CFIndex numChars=CFStringGetLength(pathToArchive);
@@ -343,7 +342,7 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	CFIndex numBytesUsed=0;
 	
 	if(!CFStringGetBytes(pathToArchive, rangeToConvert, kCFStringEncodingUTF8, 0, false, NULL, 0, &numBytesUsed))
-		return(-50);
+		return(ret);
 	UInt8 *filePath=new UInt8[numBytesUsed+1];
 	memset(filePath, '\0', numBytesUsed+1);
 	CFStringGetBytes(pathToArchive, rangeToConvert, kCFStringEncodingUTF8, 0, false, filePath, numBytesUsed+1, NULL);
@@ -351,29 +350,30 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	// open the "content.xml" file living within the sxw and read it into
 	// a CFData structure for use with other CoreFoundation elements.
 	
-	char *openCmd=new char[strlen(kOpenSubfileCmd)+strlen((char *)filePath)+strlen(fileToExtract)+1];
-	memset(openCmd, '\0', strlen(kOpenSubfileCmd)+strlen((char *)filePath)+strlen(fileToExtract)+1);
-	sprintf(openCmd, kOpenSubfileCmd, filePath, fileToExtract);
-	
-	fprintf(stderr, "%s\n", openCmd);
-	
-	FILE *f=popen(openCmd, "r");
-	if(!f)
+	unzFile f = unzOpen((const char *)filePath);
+	if (f)
 	{
-		delete[] filePath;
-		delete[] openCmd;
-		return(-50);
+		if (unzLocateFile(f, fileToExtract, 0) == UNZ_OK)
+		{
+			if (unzOpenCurrentFile(f) == UNZ_OK)
+			{
+				ret = noErr;
+
+				unsigned char buf[UNZIP_BUFFER_SIZE];
+				int bytesRead = 0;
+				while ((bytesRead = unzReadCurrentFile(f, buf, UNZIP_BUFFER_SIZE)) > 0)
+					CFDataAppendBytes(fileContents, buf, bytesRead);
+
+				unzCloseCurrentFile(f);
+			}
+		}
+
+		unzClose(f);
 	}
 	
-	unsigned char c;
-	while(fread(&c, 1, 1, f)==1)
-		CFDataAppendBytes(fileContents, &c, 1);
-	
-	pclose(f);
-	delete[] openCmd;
 	delete[] filePath;
 	
-	return(noErr);
+	return(ret);
 }
 
 /**
