@@ -373,6 +373,9 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	
 	delete[] filePath;
 	
+	if (ret == noErr && !CFDataGetLength(fileContents))
+		return(-50);
+
 	return(ret);
 }
 
