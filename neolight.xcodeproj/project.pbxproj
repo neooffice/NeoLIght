@@ -289,6 +289,8 @@
 		AC394BB208F061C100B827CC /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1 = x86_64;
 				COPY_PHASE_STRIP = NO;
 				DEBUGGING_SYMBOLS = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
@@ -309,6 +311,7 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = neolight;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -322,6 +325,8 @@
 		AC394BB308F061C100B827CC /* Deployment */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1 = x86_64;
 				COPY_PHASE_STRIP = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -339,6 +344,7 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = neolight;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
@@ -352,6 +358,8 @@
 		AC394BB408F061C100B827CC /* Default */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_64_BIT_PRE_XCODE_3_1 = x86_64;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
@@ -367,6 +375,7 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = neolight;
 				SECTORDER_FLAGS = "";
+				VALID_ARCHS = x86_64;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-four-char-constants",
