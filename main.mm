@@ -110,6 +110,8 @@ Boolean GetMetadataForFile(void *thisInterface,
     if (!attributes || !contentTypeUTI || !pathToFile)
         return(toReturn);
     
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    
     if((CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.writer"), 0)==kCFCompareEqualTo) ||
        (CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.text"), 0)==kCFCompareEqualTo) ||
        (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.text"), 0)==kCFCompareEqualTo))
@@ -140,6 +142,8 @@ Boolean GetMetadataForFile(void *thisInterface,
         if(ExtractBaseMetadata( pathToFile, attributes )==noErr)
             toReturn=TRUE;
 	}
+    
+    [pool release];
     
     return(toReturn);
 }
