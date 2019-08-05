@@ -64,7 +64,7 @@
 
 void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 {
-    if(!metaNSData || [metaNSData length] || !spotlightDict)
+    if(!metaNSData || ![metaNSData length] || !spotlightDict)
 		return;
 	
 	// construct an XML parser
@@ -397,7 +397,7 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
  */
 void ParseStylesXML(NSData *stylesNSData, CFMutableDictionaryRef spotlightDict)
 {
-    if(!stylesNSData || [stylesNSData length] || !spotlightDict)
+    if(!stylesNSData || ![stylesNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file and extract

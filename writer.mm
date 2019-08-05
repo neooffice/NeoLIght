@@ -129,7 +129,7 @@ OSErr ExtractWriterMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotl
  */
 static void ParseWriterContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(!contentNSData || [contentNSData length] || !spotlightDict)
+	if(!contentNSData || ![contentNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file and extract
