@@ -64,7 +64,7 @@
 
 ///// prototypes /////
 
-static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict);
+static void ParseCalcContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict);
 
 ///// functions /////
 
@@ -80,45 +80,38 @@ static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDiction
  * @author ed
  */
 OSErr ExtractCalcMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlightDict)
-{	
+{
+    OSErr theErr = -50;
+    
+    if(!pathToFile || !spotlightDict)
+        return(theErr);
+    
 	// open the "meta.xml" file living within the sxc and read it into
 	// the spotlight dictionary
 	
-	CFMutableDataRef metaCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	OSErr theErr=ExtractZipArchiveContent(pathToFile, kCalcMetadataArchiveFile, metaCFData);
-	if(theErr!=noErr)
-	{
-		CFRelease(metaCFData);
-		return(theErr);
-	}
-	ParseMetaXML(metaCFData, spotlightDict);
-	CFRelease(metaCFData);
+    NSMutableData *metaNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    theErr=ExtractZipArchiveContent(pathToFile, kCalcMetadataArchiveFile, metaNSData);
+    if(theErr!=noErr)
+        return(theErr);
+    ParseMetaXML(metaNSData, spotlightDict);
 	
 	// open the styles.xml file and read the header and footer info into
 	// spotlight
 	
-	CFMutableDataRef stylesCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kCalcContentStylesFile, stylesCFData);
+    NSMutableData *stylesNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kCalcContentStylesFile, stylesNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(stylesCFData);
 		return(theErr);
-	}
-	ParseStylesXML(stylesCFData, spotlightDict);
-	CFRelease(stylesCFData);
+	ParseStylesXML(stylesNSData, spotlightDict);
 	
 	// open the "content.xml" file within the sxc and extract its text
 	
-	CFMutableDataRef contentCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kCalcContentArchiveFile, contentCFData);
-	if(theErr!=noErr)
-	{
-		CFRelease(contentCFData);
-		return(theErr);
-	}
-	ParseCalcContentXML(contentCFData, spotlightDict);
-	CFRelease(contentCFData);
-
+    NSMutableData *contentNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    theErr=ExtractZipArchiveContent(pathToFile, kCalcContentArchiveFile, contentNSData);
+    if(theErr!=noErr)
+        return(theErr);
+    ParseCalcContentXML(contentNSData, spotlightDict);
+    
 	return(noErr);
 }
 
@@ -126,30 +119,38 @@ OSErr ExtractCalcMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlig
  * Parse the content of a SXC file.  This places the content of text cells
  * into a kMDItemTextContent node.
  *
- * @param contentCFData		XML file with content.xml extaction
+ * @param contentNSData		XML file with content.xml extaction
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
-static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict)
+static void ParseCalcContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(CFDataGetLength(contentCFData)==0)
+	if(!contentNSData || ![contentNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file
 	
 	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(!cfXMLTree)
-		return;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)contentNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(errorDict)
 	{
 		// errors happened during our XML parsing.  Abort our interpretation and return.
 		
 		CFRelease(errorDict);
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
 		return;
 	}
-	
-	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	
+    else if(!cfXMLTree)
+        return;
+    
+    NSMutableData *textData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    if (!textData)
+    {
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
+        return;
+    }
+    
 	// SXC files contain table:table-cell nodes that will have text:p
 	// children giving either the text or the display form of the
 	// value stored in the attributes of the table cell.  We'll run through
@@ -160,7 +161,7 @@ static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDiction
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
+    CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[textData bytes], [textData length], kTextExtractionEncoding, false);
 	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
 	{
 	    // append this text to the existing set
@@ -181,6 +182,5 @@ static void ParseCalcContentXML(CFMutableDataRef contentCFData, CFMutableDiction
 	
 	// cleanup and return
 	
-	CFRelease(textData);
 	CFRelease(cfXMLTree);
 }

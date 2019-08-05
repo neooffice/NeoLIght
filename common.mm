@@ -57,75 +57,84 @@
  * Parse a meta.xml file into keys for spotlight.  This maps relevant
  * metainformation into spotlight keys
  *
- * @param contentCFData		XML file with meta.xml extraction
+ * @param contentNSData		XML file with meta.xml extraction
  * @param spotlightDict		spotlight dictionary to be filled with
  *				metainformation
  */
-void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightDict)
+
+void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(CFDataGetLength(metaCFData)==0)
+    if(!metaNSData || [metaNSData length] || !spotlightDict)
 		return;
 	
 	// construct an XML parser
 	
 	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, metaCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(!cfXMLTree)
-		return;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)metaNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(errorDict)
 	{
 		// errors happened during our XML parsing.  Abort our interpretation and return.
 		
 		CFRelease(errorDict);
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
 		return;
 	}
-
-	CFMutableDataRef theData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	
+    else if(!cfXMLTree)
+        return;
+    
+    NSMutableData *theData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    if (!theData)
+    {
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
+        return;
+    }
+    
 	// get the document title.  This is not necessarily the file name
 	
 	ExtractNodeText(CFSTR("dc:title"), cfXMLTree, theData);
-	if(CFDataGetLength(theData))
+	if([theData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
 		CFDictionaryAddValue(spotlightDict, kMDItemTitle, theText);
 		CFRelease(theText);
 		
-		CFDataSetLength(theData, 0);
+        [theData setData:[NSData data]];
 	}
 	
 	// get the document description
 	
 	ExtractNodeText(CFSTR("dc:description"), cfXMLTree, theData);
-	if(CFDataGetLength(theData))
+    if([theData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
 		CFDictionaryAddValue(spotlightDict, kMDItemComment, theText);
 		CFRelease(theText);
 		
-		CFDataSetLength(theData, 0);
+        [theData setData:[NSData data]];
 	}
 	
 	// get the document authors.
 		
 	CFMutableArrayRef authors=CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 	ExtractNodeText(CFSTR("dc:creator"), cfXMLTree, theData);
-	if(CFDataGetLength(theData))
+	if([theData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
+		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
 		CFArrayAppendValue(authors, theText);
 		CFRelease(theText);
 		
-		CFDataSetLength(theData, 0);
+		[theData setData:[NSData data]];
 	}
 	ExtractNodeText(CFSTR("meta:initial-creator"), cfXMLTree, theData);
-	if(CFDataGetLength(theData))
-	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
+    if([theData length])
+    {
+        CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
 		CFArrayAppendValue(authors, theText);
 		CFRelease(theText);
 		
-		CFDataSetLength(theData, 0);
+        [theData setData:[NSData data]];
 	}
 	if(CFArrayGetCount(authors) > 0)
 	{
@@ -137,9 +146,9 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 	
 	ExtractNodeText(CFSTR("dc:subject"), cfXMLTree, theData, '\\');
 	ExtractNodeText(CFSTR("meta:keyword"), cfXMLTree, theData, '\\');
-	if(CFDataGetLength(theData))
-	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(theData), CFDataGetLength(theData), kTextExtractionEncoding, false);
+    if([theData length])
+    {
+        CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
 		CFArrayRef keywordArray=CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault, theText, CFSTR("\\"));
 		if(keywordArray)
 		{
@@ -158,13 +167,10 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
 			CFRelease(keywordArray);
 		}
 		CFRelease(theText);
-		
-		CFDataSetLength(theData, 0);
 	}
 	
 	// clean up and return
 	
-	CFRelease(theData);
 	CFRelease(cfXMLTree);
 }
 
@@ -183,10 +189,10 @@ void ParseMetaXML(CFMutableDataRef metaCFData, CFMutableDictionaryRef spotlightD
  *			elemnet.
  * @param separatorChar	character used to separate consecutive text nodes in
  *			the metadata
- * @param saveText	true to save CFDATA node content as text, FALSE to just
+ * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar, bool saveText)
+void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar, bool saveText)
 {
 	bool extractText=saveText;
 	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
@@ -214,9 +220,9 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
 			{
 				CFStringRef theText=CFXMLNodeGetString(CFXMLTreeGetNode(theChildren[i]));
 				// separate consecutive strings by whitespace
-				if(CFDataGetLength(textData) > 0)
+				if([textData length])
 				{
-					CFDataAppendBytes(textData, (UInt8 *)&separatorChar, sizeof(TextExtractionCharType));
+                    [textData appendBytes:&separatorChar length:sizeof(TextExtractionCharType)];
 				}
 				TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
 				memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
@@ -224,7 +230,7 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
 				extractRange.location=0;
 				extractRange.length=CFStringGetLength(theText);
 				CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
-				CFDataAppendBytes(textData, (UInt8 *)utfText, CFStringGetLength(theText)*sizeof(TextExtractionCharType));
+				[textData appendBytes:utfText length:CFStringGetLength(theText)*sizeof(TextExtractionCharType)];
 				delete[] utfText;
 			}
 			else if(CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeElement)
@@ -255,10 +261,10 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
  *					the separatorChar separator
  * @param separatorChar	UTF8 character used to separate consecutive attribute values in
  *			the metadata
- * @param saveText	true to save CFDATA node content as text, FALSE to just
+ * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar)
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar)
 {
 	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
 	
@@ -280,9 +286,9 @@ void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeN
 				{
 					CFStringRef theText=(CFStringRef)attributeValue;
 					// separate consecutive strings by whitespace
-					if(CFDataGetLength(textData) > 0)
+					if([textData length])
 					{
-						CFDataAppendBytes(textData, (UInt8 *)&separatorChar, sizeof(TextExtractionCharType));
+                        [textData appendBytes:&separatorChar length:sizeof(TextExtractionCharType)];
 					}
 					TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
 					memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
@@ -290,7 +296,7 @@ void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeN
 					extractRange.location=0;
 					extractRange.length=CFStringGetLength(theText);
 					CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
-					CFDataAppendBytes(textData, (UInt8 *)utfText, CFStringGetLength(theText)*sizeof(TextExtractionCharType));
+                    [textData appendBytes:utfText length:CFStringGetLength(theText)*sizeof(TextExtractionCharType)];
 					delete[] utfText;
 				}
 			}
@@ -331,10 +337,13 @@ void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeN
  *				already in the ref.
  * @return noErr on success, else OS error code
  */
-OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtract, CFMutableDataRef fileContents)
+OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtract, NSMutableData *fileContents)
 {
 	OSErr ret = -50;
-
+    
+    if (!pathToArchive || !fileToExtract || !strlen(fileToExtract) || !fileContents)
+        return(ret);
+    
 	// extract the path as UTF-8 for internationalization
 	
 	CFIndex numChars=CFStringGetLength(pathToArchive);
@@ -348,7 +357,7 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	CFStringGetBytes(pathToArchive, rangeToConvert, kCFStringEncodingUTF8, 0, false, filePath, numBytesUsed+1, NULL);
 		
 	// open the "content.xml" file living within the sxw and read it into
-	// a CFData structure for use with other CoreFoundation elements.
+	// a NSData structure for use with other CoreFoundation elements.
 	
 	unzFile f = unzOpen((const char *)filePath);
 	if (f)
@@ -362,7 +371,7 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 				unsigned char buf[UNZIP_BUFFER_SIZE];
 				int bytesRead = 0;
 				while ((bytesRead = unzReadCurrentFile(f, buf, UNZIP_BUFFER_SIZE)) > 0)
-					CFDataAppendBytes(fileContents, buf, bytesRead);
+                    [fileContents appendBytes:buf length:bytesRead];
 
 				unzCloseCurrentFile(f);
 			}
@@ -373,7 +382,7 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
 	
 	delete[] filePath;
 	
-	if (ret == noErr && !CFDataGetLength(fileContents))
+	if (ret == noErr && ![fileContents length])
 		return(-50);
 
 	return(ret);
@@ -383,38 +392,47 @@ OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtr
  * Parse a styles.xml file of an OOo formatted file into for spotlight to index
  * header and footer content
  *
- * @param styleCFData		XML file with styles.xml extaction
+ * @param styleNSData		XML file with styles.xml extaction
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
-void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlightDict)
+void ParseStylesXML(NSData *stylesNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(CFDataGetLength(styleCFData)==0)
+    if(!stylesNSData || [stylesNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file and extract
 	// content of appropriate header and footer nodes
 	
 	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, styleCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(!cfXMLTree)
-		return;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)stylesNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(errorDict)
 	{
 		// errors happened during our XML parsing.  Abort our interpretation and return.
 		
 		CFRelease(errorDict);
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
 		return;
 	}
-	
-	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
+    else if(!cfXMLTree)
+        return;
+    
+    NSMutableData *textData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    if (!textData)
+    {
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
+        return;
+    }
+    
 	ExtractNodeText(CFSTR("style:header"), cfXMLTree, textData);
         TextExtractionCharType space=' ';
-	CFDataAppendBytes(textData, (UInt8 *)&space, sizeof(TextExtractionCharType));
+    [textData appendBytes:&space length:sizeof(TextExtractionCharType)];
 	ExtractNodeText(CFSTR("style:footer"), cfXMLTree, textData);
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[textData bytes], [textData length], kTextExtractionEncoding, false);
 	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
 	{
 	    // append this text to the existing set
@@ -434,6 +452,5 @@ void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlig
 	
 	// cleanup and return
 	
-	CFRelease(textData);
 	CFRelease(cfXMLTree);
 }

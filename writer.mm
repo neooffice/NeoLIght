@@ -49,7 +49,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict);
+static void ParseWriterContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict);
 
 ///// constants /////
 
@@ -84,45 +84,38 @@ static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryR
  */
 OSErr ExtractWriterMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlightDict)
 {
+    OSErr theErr = -50;
+    
+    if(!pathToFile || !spotlightDict)
+        return(theErr);
+    
 	// open the "content.xml" file living within the sxw and read it into
-	// a CFData structure for use with other CoreFoundation elements.
+	// a NSData structure for use with other CoreFoundation elements.
 	
-	CFMutableDataRef contentCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	OSErr theErr=ExtractZipArchiveContent(pathToFile, kWriterContentArchiveFile, contentCFData);
+	NSMutableData *contentNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kWriterContentArchiveFile, contentNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(contentCFData);
 		return(theErr);
-	}
-	ParseContentXML(contentCFData, spotlightDict);
-	CFRelease(contentCFData);
+	ParseWriterContentXML(contentNSData, spotlightDict);
 	
 	// open the "meta.xml" file living within the xsw and read it into
 	// the spotlight dictionary
 	
-	CFMutableDataRef metaCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kWriterMetadataArchiveFile, metaCFData);
+    NSMutableData *metaNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kWriterMetadataArchiveFile, metaNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(metaCFData);
 		return(theErr);
-	}
-	ParseMetaXML(metaCFData, spotlightDict);
-	CFRelease(metaCFData);
+	ParseMetaXML(metaNSData, spotlightDict);
 	
 	// open the "styles.xml" file living within the sxw and read headers and
 	// footers into the spotlight dictionary
 	
-	CFMutableDataRef styleCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kWriterStyleArchiveFile, styleCFData);
+    NSMutableData *styleNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kWriterStyleArchiveFile, styleNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(styleCFData);
 		return(theErr);
-	}
-	ParseStylesXML(styleCFData, spotlightDict);
-	CFRelease(styleCFData);
-
+	ParseStylesXML(styleNSData, spotlightDict);
+    
 	return(noErr);
 }
 
@@ -131,36 +124,44 @@ OSErr ExtractWriterMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotl
  * data in text nodes into a kMDItemTextContent node that hopefully will
  * get indexed (seems to be nonfunctional)
  *
- * @param contentCFData		XML file with content.xml extaction
+ * @param contentNSData		XML file with content.xml extaction
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
-static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict)
+static void ParseWriterContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(CFDataGetLength(contentCFData)==0)
+	if(!contentNSData || [contentNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file and extract
 	// content of appropriate text nodes
 	
 	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(!cfXMLTree)
-		return;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)contentNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(errorDict)
 	{
 		// errors happened during our XML parsing.  Abort our interpretation and return.
 		
 		CFRelease(errorDict);
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
 		return;
 	}
-	
-	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
+    else if(!cfXMLTree)
+        return;
+    
+    NSMutableData *textData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    if (!textData)
+    {
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
+        return;
+    }
+    
 	ExtractNodeText(CFSTR("text"), cfXMLTree, textData);
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
-	
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[textData bytes], [textData length], kTextExtractionEncoding, false);
 	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
 	{
 	    // append this text to the existing set
@@ -181,6 +182,5 @@ static void ParseContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryR
 	
 	// cleanup and return
 	
-	CFRelease(textData);
 	CFRelease(cfXMLTree);
 }

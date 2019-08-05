@@ -46,12 +46,17 @@
 
 #define COMMON_H_
 
-#include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 
 /**
  * String encoding used for extracting text from OOo zip files
  */
 #define kTextExtractionEncoding	    kCFStringEncodingUnicode
+
+/**
+  * Default capacity for NSMutableData instances
+  */
+#define kTextExtractionCapacity     4096
 
 /**
  * Character type for the above string encoding
@@ -72,13 +77,13 @@ typedef UInt16 TextExtractionCharType;
  *				already in the ref.
  * @return noErr on success, else OS error code
  */
-OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtract, CFMutableDataRef fileContents);
+OSErr ExtractZipArchiveContent(CFStringRef pathToArchive, const char *fileToExtract, NSMutableData *fileContents);
 
 /**
- * Given the content of a meta.xml document stored in a CFData object, extract
+ * Given the content of a meta.xml document stored in a NSData object, extract
  * relevant metadata into a spotlight dictionary.
  */
-void ParseMetaXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict);
+void ParseMetaXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict);
 
 /**
  * Given a node of a CoreFoundation XML structure, extracxt any
@@ -98,10 +103,10 @@ void ParseMetaXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlig
  *			elemnet.
  * @param separatorChar	UTF8 character used to separate consecutive text nodes in
  *			the metadata
- * @param saveText	true to save CFDATA node content as text, FALSE to just
+ * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ', bool nodeEncountered=false);
+void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar=' ', bool saveText=false);
 
 /**
  * Given a node of a CoreFoundation XML structure, extracxt any
@@ -121,15 +126,15 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, CFMuta
  * @param separatorChar	UTF8 character used to separate consecutive attribute values in
  *			the metadata
  */
-void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, CFMutableDataRef textData, TextExtractionCharType separatorChar=' ');
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar=' ');
 
 /**
  * Parse a styles.xml file of an OOo formatted file into for spotlight to index
  * header and footer content
  *
- * @param styleCFData		XML file with styles.xml extaction
+ * @param styleNSData		XML file with styles.xml extaction
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
-void ParseStylesXML(CFMutableDataRef styleCFData, CFMutableDictionaryRef spotlightDict);
+void ParseStylesXML(NSData *styleNSData, CFMutableDictionaryRef spotlightDict);
 
 #endif

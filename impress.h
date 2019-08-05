@@ -43,7 +43,7 @@
 #ifndef IMPRESS_H
 #define IMPRESS_H
 
-#include <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 
 // Parse impress presentation files into a Spotlight importer dictionary.
 // Will also work for draw files that have embedded text objects.

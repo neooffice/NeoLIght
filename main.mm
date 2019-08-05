@@ -107,35 +107,38 @@ Boolean GetMetadataForFile(void *thisInterface,
     
     short toReturn=FALSE;
     
+    if (!attributes || !contentTypeUTI || !pathToFile)
+        return(toReturn);
+    
     if((CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.writer"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.text"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.text"), 0)==kCFCompareEqualTo))
+       (CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.text"), 0)==kCFCompareEqualTo) ||
+       (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.text"), 0)==kCFCompareEqualTo))
     {
-	if(ExtractWriterMetadata( pathToFile, attributes )==noErr)
-		toReturn=TRUE;
+        if(ExtractWriterMetadata( pathToFile, attributes )==noErr)
+            toReturn=TRUE;
     }
     else if((CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.calc"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.spreadsheet"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.spreadsheet"), 0)==kCFCompareEqualTo))
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.spreadsheet"), 0)==kCFCompareEqualTo) ||
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.spreadsheet"), 0)==kCFCompareEqualTo))
     {
-	if(ExtractCalcMetadata( pathToFile, attributes )==noErr)
-		toReturn=TRUE;
+        if(ExtractCalcMetadata( pathToFile, attributes )==noErr)
+            toReturn=TRUE;
     }
     else if((CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.impress"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.presentation"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.presentation"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.draw"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.graphics"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.graphics"), 0)==kCFCompareEqualTo))
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.presentation"), 0)==kCFCompareEqualTo) ||
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.presentation"), 0)==kCFCompareEqualTo) ||
+            (CFStringCompare(contentTypeUTI, CFSTR("org.neooffice.draw"), 0)==kCFCompareEqualTo) ||
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.graphics"), 0)==kCFCompareEqualTo) ||
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.graphics"), 0)==kCFCompareEqualTo))
     {
-	if(ExtractImpressMetadata( pathToFile, attributes )==noErr)
-		toReturn=TRUE;
+        if(ExtractImpressMetadata( pathToFile, attributes )==noErr)
+            toReturn=TRUE;
     }
 	else if((CFStringCompare(contentTypeUTI, CFSTR("org.oasis.opendocument.database"), 0)==kCFCompareEqualTo) ||
-	(CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.database"), 0)==kCFCompareEqualTo))
+            (CFStringCompare(contentTypeUTI, CFSTR("org.oasis-open.opendocument.database"), 0)==kCFCompareEqualTo))
 	{
-	if(ExtractBaseMetadata( pathToFile, attributes )==noErr)
-		toReturn=TRUE;
+        if(ExtractBaseMetadata( pathToFile, attributes )==noErr)
+            toReturn=TRUE;
 	}
     
     return(toReturn);

@@ -65,7 +65,7 @@
 
 ///// prototypes /////
 
-static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict);
+static void ParseImpressContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict);
 
 ///// functions /////
 
@@ -81,44 +81,37 @@ static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDict
  * @author ed
  */
 OSErr ExtractImpressMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spotlightDict)
-{	
+{
+    OSErr theErr = -50;
+    
+    if(!pathToFile || !spotlightDict)
+        return(theErr);
+    
 	// open the "meta.xml" file living within the sxi and read it into
 	// the spotlight dictionary
 	
-	CFMutableDataRef metaCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	OSErr theErr=ExtractZipArchiveContent(pathToFile, kImpressMetadataArchiveFile, metaCFData);
-	if(theErr!=noErr)
-	{
-		CFRelease(metaCFData);
+    NSMutableData *metaNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kImpressMetadataArchiveFile, metaNSData);
+    if(theErr!=noErr)
 		return(theErr);
-	}
-	ParseMetaXML(metaCFData, spotlightDict);
-	CFRelease(metaCFData);
+	ParseMetaXML(metaNSData, spotlightDict);
 	
 	// open the "content.xml" file within the sxi and extract its text
 	
-	CFMutableDataRef contentCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kImpressContentArchiveFile, contentCFData);
+    NSMutableData *contentNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    theErr=ExtractZipArchiveContent(pathToFile, kImpressContentArchiveFile, contentNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(contentCFData);
 		return(theErr);
-	}
-	ParseImpressContentXML(contentCFData, spotlightDict);
-	CFRelease(contentCFData);
+	ParseImpressContentXML(contentNSData, spotlightDict);
 	
 	// open the "styles.xml" file and extract any header and footer
 	
-	CFMutableDataRef stylesCFData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	theErr=ExtractZipArchiveContent(pathToFile, kImpressStylesArchiveFile, stylesCFData);
+	NSMutableData *stylesNSData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+	theErr=ExtractZipArchiveContent(pathToFile, kImpressStylesArchiveFile, stylesNSData);
 	if(theErr!=noErr)
-	{
-		CFRelease(stylesCFData);
 		return(theErr);
-	}
-	ParseStylesXML(stylesCFData, spotlightDict);
-	CFRelease(stylesCFData);
-
+	ParseStylesXML(stylesNSData, spotlightDict);
+    
 	return(noErr);
 }
 
@@ -126,30 +119,38 @@ OSErr ExtractImpressMetadata(CFStringRef pathToFile, CFMutableDictionaryRef spot
  * Parse the content of a SXI file.  This places the content of outlines and
  * other text elements of the presentation into the CFText metadata item.
  *
- * @param contentCFData		XML file with content.xml extaction
+ * @param contentNSData		XML file with content.xml extaction
  * @param spotlightDict		spotlight dictionary to be filled wih the text content
  */
-static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDictionaryRef spotlightDict)
+static void ParseImpressContentXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict)
 {
-	if(CFDataGetLength(contentCFData)==0)
+	if(!contentNSData || ![contentNSData length] || !spotlightDict)
 		return;
 	
 	// instantiate an XML parser on the content.xml file
 	
 	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, contentCFData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(!cfXMLTree)
-		return;
+	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)contentNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
 	if(errorDict)
 	{
 		// errors happened during our XML parsing.  Abort our interpretation and return.
 		
 		CFRelease(errorDict);
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
 		return;
 	}
-	
-	CFMutableDataRef textData=CFDataCreateMutable(kCFAllocatorDefault, 0);
-	
+    else if(!cfXMLTree)
+        return;
+    
+	NSMutableData *textData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    if (!textData)
+    {
+        if (cfXMLTree)
+            CFRelease(cfXMLTree);
+        return;
+    }
+    
 	// SXI files use elements of draw:text-box to hold all of its titles,
 	// outlines, and other textual information.  Extract their text
 	// content into the text content for spotlight indexing.
@@ -158,7 +159,7 @@ static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDict
 	
 	// add the data as a text node for spotlight indexing
 	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, CFDataGetBytePtr(textData), CFDataGetLength(textData), kTextExtractionEncoding, false);
+	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[textData bytes], [textData length], kTextExtractionEncoding, false);
 	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
 	{
 	    // append this text to the existing set
@@ -179,6 +180,5 @@ static void ParseImpressContentXML(CFMutableDataRef contentCFData, CFMutableDict
 	
 	// cleanup and return
 	
-	CFRelease(textData);
 	CFRelease(cfXMLTree);
 }
