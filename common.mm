@@ -84,17 +84,19 @@ void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 	ExtractNodeText(CFSTR("dc:title"), xmlTree, textData);
 	if([textData length])
 	{
-		CFDictionaryAddValue(spotlightDict, kMDItemTitle, (CFStringRef)textData);
+        NSString *textCopy=[NSString stringWithString:textData];
         [textData setString:@""];
-	}
+        CFDictionaryAddValue(spotlightDict, kMDItemTitle, (CFStringRef)textCopy);
+ 	}
 	
 	// get the document description
 	
 	ExtractNodeText(CFSTR("dc:description"), xmlTree, textData);
     if([textData length])
 	{
-        CFDictionaryAddValue(spotlightDict, kMDItemComment, (CFStringRef)textData);
+        NSString *textCopy=[NSString stringWithString:textData];
         [textData setString:@""];
+        CFDictionaryAddValue(spotlightDict, kMDItemComment, (CFStringRef)textCopy);
 	}
 	
 	// get the document authors.
@@ -103,14 +105,16 @@ void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 	ExtractNodeText(CFSTR("dc:creator"), xmlTree, textData);
 	if([textData length])
 	{
-		CFArrayAppendValue(authors, (CFStringRef)textData);
+        NSString *textCopy=[NSString stringWithString:textData];
         [textData setString:@""];
+		CFArrayAppendValue(authors, (CFStringRef)[NSString stringWithString:textCopy]);
 	}
 	ExtractNodeText(CFSTR("meta:initial-creator"), xmlTree, textData);
     if([textData length])
     {
-        CFArrayAppendValue(authors, (CFStringRef)textData);
+        NSString *textCopy=[NSString stringWithString:textData];
         [textData setString:@""];
+        CFArrayAppendValue(authors, (CFStringRef)textCopy);
 	}
 	if(CFArrayGetCount(authors) > 0)
 	{
