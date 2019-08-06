@@ -49,19 +49,14 @@
 #import <Foundation/Foundation.h>
 
 /**
- * String encoding used for extracting text from OOo zip files
+ * Default capacity for NSMutableData instances
  */
-#define kTextExtractionEncoding	    kCFStringEncodingUnicode
+#define kFileUnzipCapacity          32768
 
 /**
-  * Default capacity for NSMutableData instances
+  * Default capacity for NSMutableString instances
   */
-#define kTextExtractionCapacity     4096
-
-/**
- * Character type for the above string encoding
- */
-typedef UInt16 TextExtractionCharType;
+#define kTextExtractionCapacity     1024
 
 /**
  * Given a path to a zip archive, extract the content of an individual file
@@ -106,7 +101,7 @@ void ParseMetaXML(NSData *contentNSData, CFMutableDictionaryRef spotlightDict);
  * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar=' ', bool saveText=false);
+void ExtractNodeText(CFStringRef elementPrefix, NSXMLNode *xmlTreeNode, NSMutableString *textData, NSString *separatorString=@" ", bool saveText=false);
 
 /**
  * Given a node of a CoreFoundation XML structure, extracxt any
@@ -126,7 +121,7 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMuta
  * @param separatorChar	UTF8 character used to separate consecutive attribute values in
  *			the metadata
  */
-void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar=' ');
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, NSXMLNode *xmlTreeNode, NSMutableString *textData, NSString *separatorString=@" ");
 
 /**
  * Parse a styles.xml file of an OOo formatted file into for spotlight to index

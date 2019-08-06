@@ -69,72 +69,48 @@ void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 	
 	// construct an XML parser
 	
-	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)metaNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(errorDict)
-	{
-		// errors happened during our XML parsing.  Abort our interpretation and return.
-		
-		CFRelease(errorDict);
-        if (cfXMLTree)
-            CFRelease(cfXMLTree);
-		return;
-	}
-    else if(!cfXMLTree)
+    NSXMLDocument *xmlTree = [[NSXMLDocument alloc] initWithData:metaNSData options:NSXMLNodeOptionsNone error:nil];
+    if(!xmlTree)
         return;
     
-    NSMutableData *theData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
-    if (!theData)
-    {
-        if (cfXMLTree)
-            CFRelease(cfXMLTree);
+    [xmlTree autorelease];
+    
+    NSMutableString *textData=[NSMutableString stringWithCapacity:kTextExtractionCapacity];
+    if (!textData)
         return;
-    }
     
 	// get the document title.  This is not necessarily the file name
 	
-	ExtractNodeText(CFSTR("dc:title"), cfXMLTree, theData);
-	if([theData length])
+	ExtractNodeText(CFSTR("dc:title"), xmlTree, textData);
+	if([textData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
-		CFDictionaryAddValue(spotlightDict, kMDItemTitle, theText);
-		CFRelease(theText);
-		
-        [theData setData:[NSData data]];
+		CFDictionaryAddValue(spotlightDict, kMDItemTitle, (CFStringRef)textData);
+        [textData setString:@""];
 	}
 	
 	// get the document description
 	
-	ExtractNodeText(CFSTR("dc:description"), cfXMLTree, theData);
-    if([theData length])
+	ExtractNodeText(CFSTR("dc:description"), xmlTree, textData);
+    if([textData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
-		CFDictionaryAddValue(spotlightDict, kMDItemComment, theText);
-		CFRelease(theText);
-		
-        [theData setData:[NSData data]];
+        CFDictionaryAddValue(spotlightDict, kMDItemComment, (CFStringRef)textData);
+        [textData setString:@""];
 	}
 	
 	// get the document authors.
 		
 	CFMutableArrayRef authors=CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-	ExtractNodeText(CFSTR("dc:creator"), cfXMLTree, theData);
-	if([theData length])
+	ExtractNodeText(CFSTR("dc:creator"), xmlTree, textData);
+	if([textData length])
 	{
-		CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
-		CFArrayAppendValue(authors, theText);
-		CFRelease(theText);
-		
-		[theData setData:[NSData data]];
+		CFArrayAppendValue(authors, (CFStringRef)textData);
+        [textData setString:@""];
 	}
-	ExtractNodeText(CFSTR("meta:initial-creator"), cfXMLTree, theData);
-    if([theData length])
+	ExtractNodeText(CFSTR("meta:initial-creator"), xmlTree, textData);
+    if([textData length])
     {
-        CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
-		CFArrayAppendValue(authors, theText);
-		CFRelease(theText);
-		
-        [theData setData:[NSData data]];
+        CFArrayAppendValue(authors, (CFStringRef)textData);
+        [textData setString:@""];
 	}
 	if(CFArrayGetCount(authors) > 0)
 	{
@@ -144,34 +120,28 @@ void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
 	
 	// extract document keywords. We'll treat the subject as another keyword as well.
 	
-	ExtractNodeText(CFSTR("dc:subject"), cfXMLTree, theData, '\\');
-	ExtractNodeText(CFSTR("meta:keyword"), cfXMLTree, theData, '\\');
-    if([theData length])
+	ExtractNodeText(CFSTR("dc:subject"), xmlTree, textData, @"\\");
+	ExtractNodeText(CFSTR("meta:keyword"), xmlTree, textData, @"\\");
+    if([textData length])
     {
-        CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[theData bytes], [theData length], kTextExtractionEncoding, false);
-		CFArrayRef keywordArray=CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault, theText, CFSTR("\\"));
+		CFArrayRef keywordArray=CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault, (CFStringRef)textData, CFSTR("\\"));
 		if(keywordArray)
 		{
 			CFDictionaryAddValue(spotlightDict, kMDItemKeywords, keywordArray);
 			CFRelease(keywordArray);
 		}
-		else if(CFStringGetLength(theText)!=0)
+		else
 		{
 			// we just didn't have a separator, so treat the text as a single keyword.
 			// we still need to insert it as an array as that's the type spotlight
 			// expects
 			
 			CFMutableArrayRef keywordArray=CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-			CFArrayAppendValue(keywordArray, theText);
+			CFArrayAppendValue(keywordArray, (CFStringRef)textData);
 			CFDictionaryAddValue(spotlightDict, kMDItemKeywords, keywordArray);
 			CFRelease(keywordArray);
 		}
-		CFRelease(theText);
 	}
-	
-	// clean up and return
-	
-	CFRelease(cfXMLTree);
 }
 
 /**
@@ -192,55 +162,58 @@ void ParseMetaXML(NSData *metaNSData, CFMutableDictionaryRef spotlightDict)
  * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar, bool saveText)
+void ExtractNodeText(CFStringRef elementPrefix, NSXMLNode *xmlTreeNode, NSMutableString *textData, NSString *separatorString, bool saveText)
 {
+    if (!elementPrefix || !xmlTreeNode || !textData)
+        return;
+    
+    if([xmlTreeNode isKindOfClass:[NSXMLDocument class]])
+    {
+        xmlTreeNode=[(NSXMLDocument *)xmlTreeNode rootElement];
+        if(!xmlTreeNode)
+            return;
+    }
+    
 	bool extractText=saveText;
-	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
-	if(CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement)
-	{
-		CFStringRef tagName=CFXMLNodeGetString(theNode);
-		if(CFStringHasPrefix(tagName, elementPrefix))
-		{
-			// we found one of our text elements that contains the
-			// text and not the higher up of the children.
-			// start extracting text
-			
-			extractText=true;
-		}
-	}
+    if([xmlTreeNode kind]==NSXMLElementKind)
+    {
+        NSString *tagName=[xmlTreeNode name];
+        if(tagName && [tagName hasPrefix:(NSString *)elementPrefix])
+        {
+            // we found one of our text elements that contains the
+            // text and not the higher up of the children.
+            // start extracting text
+            
+            extractText=true;
+        }
+    }
 	
-	if((CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeDocument) || (CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement))
+    if([xmlTreeNode kind]==NSXMLDocumentKind || [xmlTreeNode kind]==NSXMLElementKind)
 	{
-		CFIndex numChildren=CFTreeGetChildCount(xmlTreeNode);
-		CFXMLTreeRef *theChildren=new CFXMLTreeRef[numChildren];
-		CFTreeGetChildren(xmlTreeNode, theChildren);
-		for(CFIndex i=0; i<numChildren; i++)
+        NSArray<NSXMLNode *> *theChildren=[xmlTreeNode children];
+        for(NSXMLNode *theChild in theChildren)
 		{
-			if((CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeText) && extractText)
+            if(!theChild)
+                continue;
+            
+            if([theChild kind]==NSXMLTextKind && extractText)
 			{
-				CFStringRef theText=CFXMLNodeGetString(CFXMLTreeGetNode(theChildren[i]));
-				// separate consecutive strings by whitespace
-				if([textData length])
-				{
-                    [textData appendBytes:&separatorChar length:sizeof(TextExtractionCharType)];
-				}
-				TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
-				memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
-				CFRange extractRange;
-				extractRange.location=0;
-				extractRange.length=CFStringGetLength(theText);
-				CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
-				[textData appendBytes:utfText length:CFStringGetLength(theText)*sizeof(TextExtractionCharType)];
-				delete[] utfText;
+                NSString *theText=[theChild stringValue];
+                if(theText && [theText length])
+                {
+                    // separate consecutive strings by whitespace
+                    if([textData length])
+                        [textData appendString:separatorString];
+                    [textData appendString:theText];
+                }
 			}
-			else if(CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeElement)
+            else if([theChild kind]==NSXMLElementKind)
 			{
 				// recurse down into all elements, extracting text according to whether we're
 				// embedded within text nodes
-				ExtractNodeText(elementPrefix, theChildren[i], textData, separatorChar, extractText);
+				ExtractNodeText(elementPrefix, theChild, textData, separatorString, extractText);
 			}
 		}
-		delete[] theChildren;
 	}
 }
 
@@ -264,63 +237,61 @@ void ExtractNodeText(CFStringRef elementPrefix, CFXMLTreeRef xmlTreeNode, NSMuta
  * @param saveText	true to save NSData node content as text, FALSE to just
  *			recurse into element children
  */
-void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, CFXMLTreeRef xmlTreeNode, NSMutableData *textData, TextExtractionCharType separatorChar)
+void ExtractNodeAttributeValue(CFStringRef elementPrefix, CFStringRef attributeName, NSXMLNode *xmlTreeNode, NSMutableString *textData, NSString *separatorString)
 {
-	CFXMLNodeRef theNode=CFXMLTreeGetNode(xmlTreeNode);
-	
-	// check if the element matches our prefix and extract relevant attribute values
-	
-	if(CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement)
-	{
-		CFStringRef tagName=CFXMLNodeGetString(theNode);
-		if(CFStringHasPrefix(tagName, elementPrefix))
-		{
-			// we found one of our elements we're searching for.  Check to see if it has an
-			// appropriately named attribute
-			
-			CFXMLElementInfo *elementInfo=(CFXMLElementInfo *)CFXMLNodeGetInfoPtr(theNode);
-			if(elementInfo && elementInfo->attributes && CFDictionaryContainsKey(elementInfo->attributes, attributeName))
-			{
-				const void *attributeValue=CFDictionaryGetValue(elementInfo->attributes, attributeName);
-				if(CFGetTypeID(attributeValue)==CFStringGetTypeID())
-				{
-					CFStringRef theText=(CFStringRef)attributeValue;
-					// separate consecutive strings by whitespace
-					if([textData length])
-					{
-                        [textData appendBytes:&separatorChar length:sizeof(TextExtractionCharType)];
-					}
-					TextExtractionCharType *utfText=new TextExtractionCharType[CFStringGetLength(theText)+1];
-					memset(utfText, '\0', (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType));
-					CFRange extractRange;
-					extractRange.location=0;
-					extractRange.length=CFStringGetLength(theText);
-					CFStringGetBytes(theText, extractRange, kTextExtractionEncoding, ' ', false, (UInt8 *)utfText, (CFStringGetLength(theText)+1)*sizeof(TextExtractionCharType), NULL);
-                    [textData appendBytes:utfText length:CFStringGetLength(theText)*sizeof(TextExtractionCharType)];
-					delete[] utfText;
-				}
-			}
-		}
-	}
-	
+    if (!elementPrefix || !attributeName || !xmlTreeNode || !textData)
+        return;
+    
+    if([xmlTreeNode isKindOfClass:[NSXMLDocument class]])
+    {
+        xmlTreeNode=[(NSXMLDocument *)xmlTreeNode rootElement];
+        if(!xmlTreeNode)
+            return;
+    }
+    
+    // check if the element matches our prefix and extract relevant attribute values
+    
+    if([xmlTreeNode kind]==NSXMLElementKind)
+    {
+        NSString *tagName=[xmlTreeNode name];
+        if(tagName && [tagName hasPrefix:(NSString *)elementPrefix] && [xmlTreeNode isKindOfClass:[NSXMLElement class]])
+        {
+            // we found one of our elements we're searching for.  Check to see if it has an
+            // appropriately named attribute
+            
+            NSXMLNode *xmlAttribute=[(NSXMLElement *)xmlTreeNode attributeForName:(NSString *)attributeName];
+            if(xmlAttribute && [xmlAttribute kind]==NSXMLAttributeKind)
+            {
+                NSString *theText=[xmlAttribute stringValue];
+                if(theText && [theText length])
+                {
+                    // separate consecutive strings by whitespace
+                    if([textData length])
+                        [textData appendString:separatorString];
+                    [textData appendString:theText];
+                }
+            }
+        }
+    }
+
 	// recurse on any children to search for additional elements that may have other attributes
 	
-	if((CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeDocument) || (CFXMLNodeGetTypeCode(theNode)==kCFXMLNodeTypeElement))
-	{
-		CFIndex numChildren=CFTreeGetChildCount(xmlTreeNode);
-		CFXMLTreeRef *theChildren=new CFXMLTreeRef[numChildren];
-		CFTreeGetChildren(xmlTreeNode, theChildren);
-		for(CFIndex i=0; i<numChildren; i++)
-		{
-			if(CFXMLNodeGetTypeCode(CFXMLTreeGetNode(theChildren[i]))==kCFXMLNodeTypeElement)
-			{
-				// recurse down into all elements, extracting text according to whether we're
-				// embedded within text nodes
-				ExtractNodeAttributeValue(elementPrefix, attributeName, theChildren[i], textData, separatorChar);
-			}
-		}
-		delete[] theChildren;
-	}
+    if([xmlTreeNode kind]==NSXMLDocumentKind || [xmlTreeNode kind]==NSXMLElementKind)
+    {
+        NSArray<NSXMLNode *> *theChildren=[xmlTreeNode children];
+        for(NSXMLNode *theChild in theChildren)
+        {
+            if(!theChild)
+                continue;
+            
+            if([theChild kind]==NSXMLElementKind)
+            {
+                // recurse down into all elements, extracting text according to whether we're
+                // embedded within text nodes
+                ExtractNodeAttributeValue(elementPrefix, attributeName, theChild, textData, separatorString);
+            }
+        }
+    }
 }
 
 /**
@@ -403,54 +374,39 @@ void ParseStylesXML(NSData *stylesNSData, CFMutableDictionaryRef spotlightDict)
 	// instantiate an XML parser on the content.xml file and extract
 	// content of appropriate header and footer nodes
 	
-	CFDictionaryRef errorDict=NULL;
-	CFXMLTreeRef cfXMLTree=CFXMLTreeCreateFromDataWithError(kCFAllocatorDefault, (CFDataRef)stylesNSData, NULL, kCFXMLParserReplacePhysicalEntities, kCFXMLNodeCurrentVersion, &errorDict);
-	if(errorDict)
-	{
-		// errors happened during our XML parsing.  Abort our interpretation and return.
-		
-		CFRelease(errorDict);
-        if (cfXMLTree)
-            CFRelease(cfXMLTree);
-		return;
-	}
-    else if(!cfXMLTree)
+    NSXMLDocument *xmlTree = [[NSXMLDocument alloc] initWithData:stylesNSData options:NSXMLNodeOptionsNone error:nil];
+    if(!xmlTree)
         return;
     
-    NSMutableData *textData=[NSMutableData dataWithCapacity:kTextExtractionCapacity];
+    [xmlTree autorelease];
+    
+    NSMutableString *textData=[NSMutableString stringWithCapacity:kTextExtractionCapacity];
     if (!textData)
-    {
-        if (cfXMLTree)
-            CFRelease(cfXMLTree);
         return;
-    }
     
-	ExtractNodeText(CFSTR("style:header"), cfXMLTree, textData);
-        TextExtractionCharType space=' ';
-    [textData appendBytes:&space length:sizeof(TextExtractionCharType)];
-	ExtractNodeText(CFSTR("style:footer"), cfXMLTree, textData);
+	ExtractNodeText(CFSTR("style:header"), xmlTree, textData);
+    if([textData length])
+        [textData appendString:@" "];
+	ExtractNodeText(CFSTR("style:footer"), xmlTree, textData);
 	
 	// add the data as a text node for spotlight indexing
-	
-	CFStringRef theText=CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)[textData bytes], [textData length], kTextExtractionEncoding, false);
-	if(CFDictionaryGetValue(spotlightDict, kMDItemTextContent))
-	{
-	    // append this text to the existing set
-	    CFStringRef previousText=(CFStringRef)CFDictionaryGetValue(spotlightDict, kMDItemTextContent);
-	    CFMutableStringRef newText=CFStringCreateMutable(kCFAllocatorDefault, 0);
-	    CFStringAppend(newText, previousText);
-	    CFStringAppendCharacters(newText, &space, 1);
-	    CFStringAppend(newText, theText);
-	    CFDictionaryReplaceValue(spotlightDict, kMDItemTextContent, newText);
-	    CFRelease(newText);
-	}
-	else
-	{
-	    CFDictionaryAddValue(spotlightDict, kMDItemTextContent, theText);
-	}
-	CFRelease(theText);
-	
-	// cleanup and return
-	
-	CFRelease(cfXMLTree);
+    
+    if([textData length])
+    {
+        CFStringRef previousText=(CFStringRef)CFDictionaryGetValue(spotlightDict, kMDItemTextContent);
+        if(previousText)
+        {
+            // append this text to the existing set
+            if(CFStringGetLength(previousText))
+            {
+                [textData insertString:@" " atIndex:0];
+                [textData insertString:(NSString *)previousText atIndex:0];
+            }
+            CFDictionaryReplaceValue(spotlightDict, kMDItemTextContent, (CFStringRef)textData);
+        }
+        else
+        {
+            CFDictionaryAddValue(spotlightDict, kMDItemTextContent, (CFStringRef)textData);
+        }
+    }
 }
