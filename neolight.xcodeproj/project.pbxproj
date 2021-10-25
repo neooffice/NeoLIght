@@ -179,7 +179,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1300;
 			};
 			buildConfigurationList = AC394BB508F061C100B827CC /* Build configuration list for PBXProject "neolight" */;
 			compatibilityVersion = "Xcode 11.4";
